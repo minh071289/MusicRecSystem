@@ -1,7 +1,6 @@
-import { useState, useRef } from 'react'; // Thêm useRef
+import { useState, useRef } from 'react';
 import { PlayerProvider } from './contexts/PlayerContext';
 
-// Import Components
 import Sidebar from './components/Sidebar';
 import MobileNav from './components/MobileNav';
 import Player from './components/Player';
@@ -9,7 +8,6 @@ import AddToPlaylistModal from './components/AddToPlaylistModal';
 import CreatePlaylistModal from './components/CreatePlaylistModal';
 import Toast from './components/Toast';
 
-// Import Pages
 import HomePage from './pages/HomePage';
 import SearchPage from './pages/SearchPage';
 import LibraryPage from './pages/LibraryPage';
@@ -19,22 +17,17 @@ function App() {
   const [trackToAdd, setTrackToAdd] = useState(null); 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
-
-  // --- 1. STATE & REF CHO HIỆU ỨNG SCROLL ---
+  
   const [scrollOpacity, setScrollOpacity] = useState(1);
-  const scrollContainerRef = useRef(null); // Ref để móc vào thẻ div cuộn
+  const scrollContainerRef = useRef(null);
 
-  // Hàm hiển thị thông báo
   const showToast = (message) => {
     setToastMessage(message);
   };
 
-  // --- 2. HÀM XỬ LÝ KHI CUỘN ---
   const handleScroll = () => {
     if (scrollContainerRef.current) {
       const scrollTop = scrollContainerRef.current.scrollTop;
-      // Tính toán độ mờ: Càng cuộn xuống (max 300px), độ mờ càng giảm
-      // Bắt đầu từ 0.8, giảm dần về 0.1
       const newOpacity = Math.max(0.1, 0.8 - scrollTop / 400);
       setScrollOpacity(newOpacity);
     }
@@ -53,7 +46,11 @@ function App() {
       localStorage.setItem('myPlaylists', JSON.stringify([...existing, newPlaylist]));
       
       setIsCreateModalOpen(false);
-      setView('library');
+      // Nếu đang mở modal thêm bài hát thì không chuyển trang, để người dùng thêm tiếp
+      if (!trackToAdd) {
+          setView('library');
+      }
+      
       window.dispatchEvent(new Event("storage")); 
       showToast(`Đã tạo playlist "${playlistName}"`);
     } catch (error) {
@@ -73,23 +70,27 @@ function App() {
         />
         
         <main className="flex-1 bg-[#121212] m-0 md:m-2 md:rounded-lg overflow-hidden relative flex flex-col">
-          
-          {/* --- 3. NỀN GRADIENT ĐỘNG --- */}
-          {/* Style opacity thay đổi theo biến scrollOpacity */}
           <div 
             className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#1e3a8a] to-[#121212] -z-0 pointer-events-none transition-opacity duration-300 ease-out"
             style={{ opacity: scrollOpacity }}
           ></div>
-          
-          {/* --- 4. GẮN SỰ KIỆN SCROLL VÀO ĐÂY --- */}
+
           <div 
-            ref={scrollContainerRef} // Gắn Ref
-            onScroll={handleScroll}  // Gắn hàm xử lý
+            ref={scrollContainerRef}
+            onScroll={handleScroll}
             className="flex-1 overflow-y-auto p-4 md:p-8 z-10 scroll-smooth"
           >
-            {view === 'home' && <HomePage onAddRequest={setTrackToAdd} />}
+            {view === 'home' && <HomePage onAddRequest={setTrackToAdd} onShowToast={showToast}/>}
             {view === 'search' && <SearchPage onAddRequest={setTrackToAdd} onShowToast={showToast} />}
-            {view === 'library' && <LibraryPage onShowToast={showToast} />}
+            
+            {/* --- SỬA Ở ĐÂY: Truyền hàm mở Modal xuống --- */}
+            {view === 'library' && (
+              <LibraryPage 
+                onShowToast={showToast} 
+                onOpenCreatePlaylist={() => setIsCreateModalOpen(true)} 
+              />
+            )}
+            {/* ------------------------------------------- */}
           </div>
         </main>
 
@@ -101,7 +102,9 @@ function App() {
           <AddToPlaylistModal 
             track={trackToAdd} 
             onClose={() => setTrackToAdd(null)} 
-            onShowToast={showToast} 
+            onShowToast={showToast}
+            // TRUYỀN HÀM MỞ MODAL TẠO VÀO ĐÂY
+            onOpenCreate={() => setIsCreateModalOpen(true)}
           />
         )}
 

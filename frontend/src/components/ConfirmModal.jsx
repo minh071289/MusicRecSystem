@@ -12,13 +12,13 @@ export default function ConfirmModal({ title, message, onConfirm, onCancel }) {
             onClick={onCancel}
             className="text-white font-bold px-4 py-2 rounded hover:bg-white/10 transition"
           >
-            Hủy
+            Cancel
           </button>
           <button 
             onClick={onConfirm}
             className="bg-red-600 text-white font-bold px-6 py-2 rounded-full hover:scale-105 active:scale-95 transition"
           >
-            Xóa
+            Delete
           </button>
         </div>
       </div>

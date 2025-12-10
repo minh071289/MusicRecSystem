@@ -14,7 +14,7 @@ const getAccessToken = async () => {
 
   const authString = btoa(`${CLIENT_ID}:${CLIENT_SECRET}`);
   try {
-    const response = await axios.post('https://accounts.spotify.com/api/token', // Link chuẩn
+    const response = await axios.post('https://accounts.spotify.com/api/token', 
       new URLSearchParams({ grant_type: 'client_credentials' }),
       {
         headers: {
@@ -27,19 +27,20 @@ const getAccessToken = async () => {
     tokenExpirationTime = now + (response.data.expires_in * 1000);
     return accessToken;
   } catch (error) {
-    console.error("Lỗi Token:", error);
+    console.error("Token Error:", error);
     return null;
   }
 };
 
-// 1. Hàm Search Đa Năng
+// 1. Smart Search
 export const smartSearch = async (query, type) => {
   const token = await getAccessToken();
   if (!token) return [];
   try {
     const response = await axios.get('https://api.spotify.com/v1/search', {
       headers: { Authorization: `Bearer ${token}` },
-      params: { q: query, type: type, limit: 12, market: 'VN' } // Thêm market VN
+      // SỬA: market 'US' để ưu tiên nội dung quốc tế
+      params: { q: query, type: type, limit: 12, market: 'US' } 
     });
 
     if (type === 'artist') {
@@ -48,7 +49,7 @@ export const smartSearch = async (query, type) => {
         title: item.name,
         image: item.images[0]?.url || 'https://placehold.co/400x400/333/fff?text=No+Image',
         followers: item.followers.total,
-        genres: item.genres.slice(0, 2).join(', '),
+        genres: item.genres.slice(0, 2).join(', '), // Genres của Spotify trả về tiếng Anh sẵn rồi
         type: 'artist' 
       }));
     } 
@@ -71,27 +72,25 @@ export const smartSearch = async (query, type) => {
       }));
     }
   } catch (error) {
-    console.error("Lỗi smartSearch:", error);
+    console.error("Search Error:", error);
     return [];
   }
 };
 
-// 2. Lấy chi tiết Profile Nghệ sĩ (QUAN TRỌNG: Sửa link API)
+// 2. Get Artist Profile
 export const getArtistData = async (artistId) => {
   const token = await getAccessToken();
   if (!token) return null;
   
   try {
     const [tracksRes, albumsRes] = await Promise.all([
-      // API Top Tracks: Bắt buộc phải có market=VN
       axios.get(`https://api.spotify.com/v1/artists/${artistId}/top-tracks`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: { market: 'VN' } 
+        params: { market: 'US' } // Đổi sang US
       }),
-      // API Albums
       axios.get(`https://api.spotify.com/v1/artists/${artistId}/albums`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: { include_groups: 'album,single', limit: 10, market: 'VN' }
+        params: { include_groups: 'album,single', limit: 10, market: 'US' }
       })
     ]);
 
@@ -112,12 +111,13 @@ export const getArtistData = async (artistId) => {
       }))
     };
   } catch (error) {
-    console.error("Lỗi getArtistData:", error);
+    console.error("Artist Data Error:", error);
     return null;
   }
 };
 
-// Các hàm phụ (Wrapper cho code cũ)
+// --- Helper Functions ---
+
 export const searchSpotify = async (query) => await smartSearch(query, 'track');
 export const searchArtists = async (query) => await smartSearch(query, 'artist');
 
@@ -127,7 +127,7 @@ export const getNewReleases = async () => {
   try {
     const response = await axios.get('https://api.spotify.com/v1/browse/new-releases', {
       headers: { Authorization: `Bearer ${token}` },
-      params: { limit: 10, country: 'VN' }
+      params: { limit: 10, country: 'US' } // Đổi sang US
     });
     return response.data.albums.items.map(a => ({
       id: a.id, title: a.name, subtitle: a.artists[0].name, image: a.images[0]?.url, type: 'album'
@@ -141,7 +141,7 @@ export const getFeaturedPlaylists = async () => {
   try {
     const response = await axios.get('https://api.spotify.com/v1/browse/featured-playlists', {
       headers: { Authorization: `Bearer ${token}` },
-      params: { limit: 8, country: 'VN', locale: 'vi_VN' }
+      params: { limit: 8, country: 'US', locale: 'en_US' } 
     });
     return response.data.playlists.items.map(p => ({
       id: p.id, title: p.name, subtitle: p.description, image: p.images[0]?.url, type: 'playlist'

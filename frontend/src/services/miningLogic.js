@@ -1,83 +1,90 @@
-// Dữ liệu giả lập mở rộng
+// --- 1. DATASETS (English Translated) ---
+
 export const artists = [
-  // V-Pop
-  { id: '1', name: 'Sơn Tùng M-TP', genre: 'Pop' },
-  { id: '4', name: 'Đen Vâu', genre: 'Rap' },
-  { id: '6', name: 'Binz', genre: 'Rap' },
-  { id: '7', name: 'Hoàng Thùy Linh', genre: 'Pop' },
-  { id: '8', name: 'Mono', genre: 'Pop' },
-  { id: '9', name: 'HIEUTHUHAI', genre: 'Rap' },
-  { id: '10', name: 'Mỹ Tâm', genre: 'Pop' },
-  { id: '11', name: 'Phan Mạnh Quỳnh', genre: 'Ballad' },
-  { id: '12', name: 'Vũ.', genre: 'Indie' },
-  { id: '13', name: 'MCK', genre: 'Rap' },
-  
-  // US-UK
-  { id: '2', name: 'Taylor Swift', genre: 'Country Pop' },
-  { id: '5', name: 'Imagine Dragons', genre: 'Rock' },
-  { id: '14', name: 'Justin Bieber', genre: 'Pop' },
-  { id: '15', name: 'The Weeknd', genre: 'R&B' },
-  { id: '16', name: 'Ariana Grande', genre: 'Pop' },
-  { id: '17', name: 'Bruno Mars', genre: 'Pop' },
-  { id: '18', name: 'Ed Sheeran', genre: 'Pop' },
-  
-  // K-Pop
-  { id: '3', name: 'BTS', genre: 'K-Pop' },
-  { id: '19', name: 'BLACKPINK', genre: 'K-Pop' },
-  { id: '20', name: 'NewJeans', genre: 'K-Pop' },
-  { id: '21', name: 'TWICE', genre: 'K-Pop' },
-  { id: '22', name: 'Big Bang', genre: 'K-Pop' },
+  { id: 'son_tung', name: 'Sơn Tùng M-TP', genres: 'V-Pop, Pop Ballad', region: 'VN' },
+  { id: 'den_vau', name: 'Đen Vâu', genres: 'Rap, Hip-hop', region: 'VN' },
+  { id: 'hoang_thuy_linh', name: 'Hoàng Thùy Linh', genres: 'Folktronica, Pop', region: 'VN' },
+  { id: 'bts', name: 'BTS', genres: 'K-Pop, Hip-hop', region: 'KR' },
+  { id: 'blackpink', name: 'BLACKPINK', genres: 'K-Pop, EDM', region: 'KR' },
+  { id: 'taylor_swift', name: 'Taylor Swift', genres: 'Pop, Country', region: 'US' },
+  { id: 'the_weeknd', name: 'The Weeknd', genres: 'R&B, Synth-pop', region: 'US' },
+  { id: 'justin_bieber', name: 'Justin Bieber', genres: 'Pop, R&B', region: 'US' },
+  { id: 'ariana_grande', name: 'Ariana Grande', genres: 'Pop, R&B', region: 'US' },
+  { id: 'iu', name: 'IU', genres: 'K-Pop, Ballad', region: 'KR' },
+  { id: 'binz', name: 'Binz', genres: 'Rap, Hip-hop', region: 'VN' },
+  { id: 'min', name: 'Min', genres: 'V-Pop, Dance', region: 'VN' },
+  { id: 'my_tam', name: 'Mỹ Tâm', genres: 'Pop Ballad', region: 'VN' },
 ];
 
 export const countries = [
-  { id: 'VN', name: 'Việt Nam' },
-  { id: 'US', name: 'Mỹ - Anh (US-UK)' },
-  { id: 'KR', name: 'Hàn Quốc (K-Pop)' },
-  { id: 'JP', name: 'Nhật Bản' },
-  { id: 'CN', name: 'Trung Quốc' },
-  { id: 'TH', name: 'Thái Lan' },
-  { id: 'BR', name: 'Brazil' },
-  { id: 'ES', name: 'Tây Ban Nha' },
+  { id: 'VN', name: 'Vietnam' },
+  { id: 'KR', name: 'South Korea' },
+  { id: 'US', name: 'United States' },
+  { id: 'UK', name: 'United Kingdom' },
+  { id: 'JP', name: 'Japan' },
+  { id: 'CN', name: 'China' },
 ];
 
 export const miningModels = [
-  { id: 'similar_artist', name: 'Mô hình 1: Nghệ sĩ tương đồng (Artist Similarity)' },
-  { id: 'mood_mix', name: 'Mô hình 2: Gợi ý bài hát theo Mood (Content-Based)' },
-  { id: 'market_trend', name: 'Mô hình 3: Xu hướng thị trường (Trend Analysis)' },
+  { id: 'similar_artist', name: 'Model 1: Artist Similarity' }, // Đã sửa tên hiển thị ở đây luôn cho chắc
+  { id: 'mood_mix', name: 'Model 2: Mood-Based Mix' },
+  { id: 'market_trend', name: 'Model 3: Market Trends' },
 ];
 
-// Hàm chạy thuật toán (Logic giả lập)
+// --- 2. ALGORITHMS (LOGIC) ---
+
+// (Giữ nguyên logic cũ, chỉ cập nhật comment nếu cần)
 export const runMiningAlgorithm = (modelId, artistId, countryId) => {
-  console.log(`Running Model: ${modelId} | ArtistID: ${artistId} | Country: ${countryId}`);
-  
-  // Logic cơ bản: Nếu có ArtistID cụ thể thì dùng logic mapping, không thì trả về tên chung
-  
-  // MODEL 3: TREND (Chỉ cần Quốc gia)
-  if (modelId === 'market_trend') {
-    if (countryId === 'VN') return { query: 'Top 50 Vietnam', type: 'playlist' };
-    if (countryId === 'KR') return { query: 'K-Pop Hot 100', type: 'playlist' };
-    if (countryId === 'JP') return { query: 'Japan Top 50', type: 'playlist' };
-    return { query: 'Global Top 50', type: 'playlist' };
-  }
+  console.log(`Running Mining: Model=${modelId}, Artist=${artistId}, Country=${countryId}`);
 
-  // MODEL 1 & 2: Cần Artist
-  // Nếu artistId là 'unknown' (người dùng nhập tên lạ), ta trả về chính tên đó để tìm kiếm
-  
-  const artistNameLookup = artists.find(a => a.id === artistId)?.name || '';
+  let result = {
+    type: 'track', 
+    query: '',
+    explanation: ''
+  };
 
+  // --- MODEL 1: Tìm nghệ sĩ tương đồng (Collaborative Filtering mô phỏng) ---
   if (modelId === 'similar_artist') {
-    if (artistId === '1') return { query: 'Son Tung M-TP Fans', type: 'artist' }; 
-    if (artistId === '3') return { query: 'K-Pop Boy Groups', type: 'artist' };
-    // Mặc định: Tìm nghệ sĩ tương tự thông qua search của Spotify
-    return { query: artistNameLookup || 'Pop Artist', type: 'artist' };
+    result.type = 'artist';
+    
+    // Tìm nghệ sĩ gốc
+    const seedArtist = artists.find(a => a.id === artistId);
+    
+    if (seedArtist) {
+      // Logic: Tìm nghệ sĩ cùng thể loại (Genres)
+      const relatedGenres = seedArtist.genres.split(',').map(g => g.trim());
+      // Query search giả lập: "K-Pop" hoặc "V-Pop"
+      result.query = `genre:"${relatedGenres[0]}"`; 
+      
+      // Nếu là VN thì ưu tiên tìm thêm nghệ sĩ VN khác
+      if(countryId === 'VN' && seedArtist.region === 'VN') {
+         result.query = 'V-Pop';
+      }
+    } else {
+      // Fallback nếu không tìm thấy ID (người dùng nhập tay)
+      result.query = 'Pop';
+    }
   }
 
-  if (modelId === 'mood_mix') {
-    if (countryId === 'VN') return { query: 'V-Pop Chill', type: 'track' };
-    if (artistId === '4') return { query: 'Vietnamese Rap', type: 'track' };
-    // Mặc định
-    return { query: `${artistNameLookup} Mix`, type: 'track' };
+  // --- MODEL 2: Mood Mix (Phân lớp cảm xúc - Classification) ---
+  else if (modelId === 'mood_mix') {
+    result.type = 'playlist';
+    // Logic đơn giản hóa: Dựa vào vùng miền để đoán "Mood"
+    if (countryId === 'VN') result.query = 'Vietnamese Chill';
+    else if (countryId === 'KR') result.query = 'K-Pop Energy';
+    else if (countryId === 'US') result.query = 'US-UK Mood';
+    else result.query = 'Global Chill';
   }
 
-  return { query: 'Pop', type: 'track' };
+  // --- MODEL 3: Market Trend (Phân tích xu hướng - Clustering/Trend Analysis) ---
+  else if (modelId === 'market_trend') {
+    result.type = 'track'; // Trả về bài hát
+    // Logic: Top 50 theo quốc gia
+    if (countryId === 'VN') result.query = 'Top 50 Vietnam';
+    else if (countryId === 'KR') result.query = 'K-Pop Hot';
+    else if (countryId === 'US') result.query = 'Billboard Hot 100';
+    else result.query = 'Global Top 50';
+  }
+
+  return result;
 };

@@ -10,7 +10,7 @@ export default function ArtistCard({ item, onClick }) {
         <img src={item.image} alt={item.title} className="w-full h-full object-cover rounded-full shadow-lg group-hover:scale-105 transition duration-500" />
       </div>
       <h3 className="text-white font-bold truncate text-base w-full">{item.title}</h3>
-      <p className="text-[#a7a7a7] text-sm mt-1">Nghệ sĩ</p>
+      <p className="text-[#a7a7a7] text-sm mt-1">Artist</p>
       {item.genres && <p className="text-xs text-[#1db954] mt-1 capitalize truncate w-full">{item.genres}</p>}
     </div>
   );

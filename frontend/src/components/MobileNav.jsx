@@ -10,15 +10,15 @@ export default function MobileNav({ view, setView }) {
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black to-black/95 border-t border-[#282828] h-16 flex justify-around items-center z-50 pb-1">
       <button onClick={() => setView('home')} className={`flex flex-col items-center gap-1 transition ${getNavClass('home')}`}>
         <FaHome className="text-xl" />
-        <span className="text-[10px]">Trang chủ</span>
+        <span className="text-[10px]">Home</span>
       </button>
       <button onClick={() => setView('search')} className={`flex flex-col items-center gap-1 transition ${getNavClass('search')}`}>
         <FaSearch className="text-xl" />
-        <span className="text-[10px]">Tìm kiếm</span>
+        <span className="text-[10px]">Search</span>
       </button>
       <button onClick={() => setView('library')} className={`flex flex-col items-center gap-1 transition ${getNavClass('library')}`}>
         <FaBook className="text-xl" />
-        <span className="text-[10px]">Thư viện</span>
+        <span className="text-[10px]">Library</span>
       </button>
     </div>
   );

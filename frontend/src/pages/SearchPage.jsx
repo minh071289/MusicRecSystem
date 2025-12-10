@@ -7,13 +7,12 @@ import ArtistCard from '../components/ArtistCard';
 import ArtistProfile from '../components/ArtistProfile'; 
 import { FaChevronDown, FaSearch } from 'react-icons/fa';
 
-// --- COMPONENT CON: Ô NHẬP LIỆU THÔNG MINH (AUTOCOMPLETE) ---
+// --- COMPONENT CON: AUTOCOMPLETE INPUT ---
 const SearchableDropdown = ({ options, placeholder, value, onChange, onSelect }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filterText, setFilterText] = useState(value);
   const wrapperRef = useRef(null);
 
-  // Xử lý click ra ngoài để đóng dropdown
   useEffect(() => {
     function handleClickOutside(event) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
@@ -24,12 +23,10 @@ const SearchableDropdown = ({ options, placeholder, value, onChange, onSelect })
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Cập nhật text khi props value thay đổi (ví dụ khi reset form)
   useEffect(() => {
     setFilterText(value);
   }, [value]);
 
-  // Lọc danh sách hiển thị
   const filteredOptions = options.filter(item => 
     item.name.toLowerCase().includes(filterText.toLowerCase())
   );
@@ -44,15 +41,14 @@ const SearchableDropdown = ({ options, placeholder, value, onChange, onSelect })
           value={filterText}
           onChange={(e) => {
             setFilterText(e.target.value);
-            onChange(e.target.value); // Trả text về cha
-            setIsOpen(true); // Mở dropdown khi gõ
+            onChange(e.target.value);
+            setIsOpen(true);
           }}
-          onFocus={() => setIsOpen(true)} // Mở dropdown khi bấm vào
+          onFocus={() => setIsOpen(true)}
         />
         <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs" />
       </div>
 
-      {/* DROPDOWN DANH SÁCH (Chỉ hiện khi isOpen = true) */}
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-[#282828] border border-[#333] rounded-lg shadow-2xl max-h-60 overflow-y-auto z-50 scrollbar-thin">
           {filteredOptions.length > 0 ? (
@@ -60,10 +56,10 @@ const SearchableDropdown = ({ options, placeholder, value, onChange, onSelect })
               <div 
                 key={item.id}
                 onClick={() => {
-                  setFilterText(item.name); // Điền tên vào ô
-                  onSelect(item.id); // Trả ID về cha
+                  setFilterText(item.name);
+                  onSelect(item.id);
                   onChange(item.name); 
-                  setIsOpen(false); // Đóng dropdown
+                  setIsOpen(false);
                 }}
                 className="p-3 hover:bg-[#3E3E3E] cursor-pointer text-sm text-gray-200 border-b border-[#333] last:border-0"
               >
@@ -71,7 +67,7 @@ const SearchableDropdown = ({ options, placeholder, value, onChange, onSelect })
               </div>
             ))
           ) : (
-            <div className="p-3 text-gray-500 text-sm">Không tìm thấy dữ liệu khớp...</div>
+            <div className="p-3 text-gray-500 text-sm">No matching data found...</div>
           )}
         </div>
       )}
@@ -79,15 +75,13 @@ const SearchableDropdown = ({ options, placeholder, value, onChange, onSelect })
   );
 };
 
-// --- COMPONENT CHÍNH ---
+// --- MAIN COMPONENT ---
 export default function SearchPage({ onAddRequest, onShowToast }) {
   const [selectedModel, setSelectedModel] = useState(miningModels[0].id);
   
-  // State lưu Text hiển thị trên ô nhập
   const [artistName, setArtistName] = useState('');
   const [countryName, setCountryName] = useState('');
 
-  // State lưu ID thực sự để chạy thuật toán (ẩn bên dưới)
   const [selectedArtistId, setSelectedArtistId] = useState(null);
   const [selectedCountryId, setSelectedCountryId] = useState(null);
 
@@ -97,26 +91,34 @@ export default function SearchPage({ onAddRequest, onShowToast }) {
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
+  // Helper để hiển thị tên Model bằng tiếng Anh (ghi đè tên tiếng Việt từ file logic)
+  const getModelNameInEnglish = (modelId) => {
+    switch (modelId) {
+        case 'similar_artist': return { title: 'Model 1', subtitle: 'Artist Similarity' };
+        case 'mood_mix': return { title: 'Model 2', subtitle: 'Mood-Based Mix' };
+        case 'market_trend': return { title: 'Model 3', subtitle: 'Market Trends' };
+        default: return { title: 'Unknown Model', subtitle: 'General Analysis' };
+    }
+  };
+
   const handleSearch = async () => {
     // 1. Validation
-    // Tìm ID quốc gia dựa trên tên (nếu người dùng gõ tay mà không chọn)
     let finalCountryId = selectedCountryId;
     if (!finalCountryId && countryName) {
         const foundC = countries.find(c => c.name.toLowerCase() === countryName.toLowerCase());
-        finalCountryId = foundC ? foundC.id : 'VN'; // Mặc định VN nếu không tìm thấy
+        finalCountryId = foundC ? foundC.id : 'VN';
     }
 
     if (!countryName) {
-      if(onShowToast) onShowToast("Vui lòng nhập Quốc gia!");
+      if(onShowToast) onShowToast("Please select a Country!");
       return;
     }
     
     if (selectedModel !== 'market_trend' && !artistName) {
-      if(onShowToast) onShowToast("Vui lòng nhập tên Nghệ sĩ!");
+      if(onShowToast) onShowToast("Please enter an Artist name!");
       return;
     }
 
-    // Tìm ID nghệ sĩ (nếu người dùng gõ tay)
     let finalArtistId = selectedArtistId;
     if (!finalArtistId && artistName) {
         const foundA = artists.find(a => a.name.toLowerCase() === artistName.toLowerCase());
@@ -127,16 +129,15 @@ export default function SearchPage({ onAddRequest, onShowToast }) {
     setHasSearched(true);
     setViewingArtist(null);
 
-    // 2. Chạy thuật toán
+    // 2. Run Algorithm
     const miningResult = runMiningAlgorithm(selectedModel, finalArtistId, finalCountryId);
     
-    // Nếu ID unknown, dùng chính text người dùng nhập để tìm
     let query = miningResult.query;
     if (finalArtistId === 'unknown' && selectedModel === 'similar_artist') {
         query = artistName;
     }
 
-    // 3. Gọi API
+    // 3. Call API
     const data = await smartSearch(query, miningResult.type);
     
     setResults(data);
@@ -150,45 +151,48 @@ export default function SearchPage({ onAddRequest, onShowToast }) {
 
   return (
     <div className="animate-fade-in pb-32 pt-8">
-      <h1 className="text-3xl font-bold mb-8">Hệ thống đề xuất Data Mining</h1>
+      <h1 className="text-3xl font-bold mb-8">Data Mining Discovery System</h1>
       
       <div className="bg-[#181818] p-6 rounded-xl shadow-lg mb-8 max-w-4xl border border-[#333]">
         
-        <h2 className="text-xl font-bold mb-4 text-[#1db954]">1. Chọn Mô hình Đề xuất</h2>
+        <h2 className="text-xl font-bold mb-4 text-[#1db954]">1. Select Recommendation Model</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {miningModels.map(model => (
-            <div 
-              key={model.id}
-              onClick={() => setSelectedModel(model.id)}
-              className={`p-4 rounded-lg border-2 cursor-pointer transition flex flex-col justify-center h-24 ${selectedModel === model.id ? 'border-[#1db954] bg-[#282828]' : 'border-transparent bg-[#121212] hover:bg-[#282828]'}`}
-            >
-              <h3 className={`font-bold text-sm mb-1 ${selectedModel === model.id ? 'text-[#1db954]' : 'text-white'}`}>{model.name.split(':')[0]}</h3>
-              <p className="text-xs text-gray-400">{model.name.split(':')[1]}</p>
-            </div>
-          ))}
+          {miningModels.map(model => {
+            const engName = getModelNameInEnglish(model.id);
+            return (
+                <div 
+                key={model.id}
+                onClick={() => setSelectedModel(model.id)}
+                className={`p-4 rounded-lg border-2 cursor-pointer transition flex flex-col justify-center h-24 ${selectedModel === model.id ? 'border-[#1db954] bg-[#282828]' : 'border-transparent bg-[#121212] hover:bg-[#282828]'}`}
+                >
+                <h3 className={`font-bold text-sm mb-1 ${selectedModel === model.id ? 'text-[#1db954]' : 'text-white'}`}>{engName.title}</h3>
+                <p className="text-xs text-gray-400">{engName.subtitle}</p>
+                </div>
+            );
+          })}
         </div>
 
-        <h2 className="text-xl font-bold mb-4 text-[#1db954]">2. Nhập dữ liệu đầu vào</h2>
+        <h2 className="text-xl font-bold mb-4 text-[#1db954]">2. Enter Input Data</h2>
         <div className="flex flex-col md:flex-row gap-4">
           
-          {/* Ô NHẬP NGHỆ SĨ (AUTOCOMPLETE) */}
+          {/* ARTIST INPUT */}
           {selectedModel !== 'market_trend' && (
             <SearchableDropdown 
               options={artists}
-              placeholder="Nhập tên Nghệ sĩ..."
+              placeholder="Enter Artist Name..."
               value={artistName}
               onChange={(text) => {
                 setArtistName(text);
-                setSelectedArtistId(null); // Reset ID nếu người dùng sửa text
+                setSelectedArtistId(null); 
               }}
               onSelect={(id) => setSelectedArtistId(id)}
             />
           )}
 
-          {/* Ô NHẬP QUỐC GIA (AUTOCOMPLETE) */}
+          {/* COUNTRY INPUT */}
           <SearchableDropdown 
             options={countries}
-            placeholder="Nhập tên Quốc gia..."
+            placeholder="Enter Country..."
             value={countryName}
             onChange={(text) => {
               setCountryName(text);
@@ -202,18 +206,18 @@ export default function SearchPage({ onAddRequest, onShowToast }) {
             disabled={isLoading} 
             className="bg-[#1db954] text-black font-bold px-8 py-3 rounded-full hover:scale-105 active:scale-95 transition disabled:opacity-50 min-w-[150px] flex items-center justify-center gap-2"
           >
-            {isLoading ? 'Đang chạy...' : <><FaSearch /> Phân tích</>}
+            {isLoading ? 'Processing...' : <><FaSearch /> Analyze</>}
           </button>
         </div>
       </div>
 
       {hasSearched && (
         <div>
-          <h2 className="text-2xl font-bold mb-4">Kết quả phân tích</h2>
+          <h2 className="text-2xl font-bold mb-4">Analysis Results</h2>
           {isLoading ? (
             <div className="text-[#b3b3b3] p-10 text-center flex flex-col items-center">
                <div className="w-8 h-8 border-4 border-[#1db954] border-t-transparent rounded-full animate-spin mb-4"></div>
-               Đang chạy thuật toán & kết nối API...
+               Running data mining algorithms...
             </div>
           ) : results.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -225,12 +229,12 @@ export default function SearchPage({ onAddRequest, onShowToast }) {
                   return <PlaylistCard key={item.id} item={item} />;
                 } 
                 else {
-                  return <SongCard key={item.id} item={item} onAddToPlaylist={onAddRequest} />;
+                  return <SongCard key={item.id} item={item} onAddToPlaylist={onAddRequest} onShowToast={onShowToast}/>;
                 }
               })}
             </div>
           ) : (
-            <p className="text-[#b3b3b3]">Không tìm thấy kết quả phù hợp.</p>
+            <p className="text-[#b3b3b3]">No suitable results found.</p>
           )}
         </div>
       )}
