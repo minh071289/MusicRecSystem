@@ -47,7 +47,7 @@ const LoginForm = ({ onLogin }) => {
       
       <div className="flex gap-2 w-full max-w-md">
         <input 
-          type="text" placeholder="User ID (e.g. 1, 5...)" 
+          type="text" placeholder="User ID (e.g. 1, 3, 4, 5...)" 
           className="flex-1 bg-[#2a2a2a] text-white p-3 pl-5 rounded-l-lg outline-none border border-transparent focus:border-[#1db954] transition placeholder-gray-500"
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
@@ -77,7 +77,6 @@ const ArtistDropdown = ({ options, value, onSelect }) => {
   }, []);
 
   useEffect(() => { setText(value) }, [value]);
-
   const filteredOptions = options.filter(item => item.name.toLowerCase().includes(text.toLowerCase())).slice(0, 50);
 
   return (
@@ -111,7 +110,7 @@ export default function SearchPage({ onAddRequest, onShowToast }) {
   const [selectedModel, setSelectedModel] = useState(artistModels[0].id);
   const [inputValue, setInputValue] = useState('');
   const [inputLabel, setInputLabel] = useState('');
-
+  
   const [currentUser, setCurrentUser] = useState(null);
   const [userStats, setUserStats] = useState(null);
 
@@ -162,7 +161,7 @@ export default function SearchPage({ onAddRequest, onShowToast }) {
   };
 
   const handleUserLogin = (uid) => {
-    if (!userList.includes(uid)) {
+    if (!userList.includes(uid.toString().trim())) {
         if(onShowToast) onShowToast("User ID not found!");
         return;
     }
@@ -189,7 +188,6 @@ export default function SearchPage({ onAddRequest, onShowToast }) {
 
       <div className="bg-[#181818] p-8 rounded-2xl shadow-xl border border-[#333] mb-10 min-h-[300px]">
         
-        {/* --- TAB 1: ARTIST --- */}
         {activeTab === 'artist' && (
             <div className="animate-slide-up">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
@@ -226,7 +224,6 @@ export default function SearchPage({ onAddRequest, onShowToast }) {
             </div>
         )}
 
-        {/* --- TAB 2: USER --- */}
         {activeTab === 'user' && (
             <div className="animate-slide-up">
                 {!currentUser ? (
