@@ -18,7 +18,6 @@ export default function PlaylistCard({ item }) {
       </div>
       <h3 className="font-bold text-white mb-1 truncate">{item.title}</h3>
       
-      {/* SỬA: Dùng text tiếng Anh hoặc lấy từ data */}
       <p className="text-sm text-[#a7a7a7] line-clamp-2">
         {item.subtitle || `By ${item.owner || 'Spotify'}`}
       </p>

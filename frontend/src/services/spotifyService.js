@@ -1,13 +1,12 @@
 import axios from 'axios';
 
-// --- API KEY CỦA BẠN ---
+// --- API KEY ---
 const CLIENT_ID = '77cf574820a4413491c3cdf662150ad4'; 
 const CLIENT_SECRET = 'd67381309892423ab6ae76129fa4d56d'; 
 
 let accessToken = '';
 let tokenExpirationTime = 0;
 
-// Hàm lấy Token
 const getAccessToken = async () => {
   const now = Date.now();
   if (accessToken && now < tokenExpirationTime) return accessToken;
@@ -32,14 +31,12 @@ const getAccessToken = async () => {
   }
 };
 
-// 1. Smart Search
 export const smartSearch = async (query, type) => {
   const token = await getAccessToken();
   if (!token) return [];
   try {
     const response = await axios.get('https://api.spotify.com/v1/search', {
       headers: { Authorization: `Bearer ${token}` },
-      // SỬA: market 'US' để ưu tiên nội dung quốc tế
       params: { q: query, type: type, limit: 12, market: 'US' } 
     });
 
@@ -49,10 +46,11 @@ export const smartSearch = async (query, type) => {
         title: item.name,
         image: item.images[0]?.url || 'https://placehold.co/400x400/333/fff?text=No+Image',
         followers: item.followers.total,
-        genres: item.genres.slice(0, 2).join(', '), // Genres của Spotify trả về tiếng Anh sẵn rồi
+        genres: item.genres.slice(0, 2).map(g => g.charAt(0).toUpperCase() + g.slice(1)).join(', '),
         type: 'artist' 
       }));
     } 
+
     else if (type === 'playlist') {
       return response.data.playlists.items.map(item => ({
         id: item.id,
@@ -62,6 +60,17 @@ export const smartSearch = async (query, type) => {
         type: 'playlist'
       }));
     }
+
+    else if (type === 'album') {
+      return response.data.albums.items.map(item => ({
+        id: item.id,
+        title: item.name,
+        subtitle: item.artists.map(a => a.name).join(', '),
+        image: item.images[0]?.url,
+        type: 'album'
+      }));
+    }
+
     else {
       return response.data.tracks.items.map(item => ({
         id: item.id,
@@ -72,21 +81,34 @@ export const smartSearch = async (query, type) => {
       }));
     }
   } catch (error) {
-    console.error("Search Error:", error);
+    console.error("SmartSearch Error:", error);
     return [];
   }
 };
 
-// 2. Get Artist Profile
+export const getArtistsDetails = async (artistNames) => {
+  const topArtists = artistNames.slice(0, 12); 
+  const requests = topArtists.map(name => smartSearch(name, 'artist'));
+  
+  try {
+    const results = await Promise.all(requests);
+    return results
+      .map(res => res[0]) 
+      .filter(item => item !== undefined); 
+  } catch (error) {
+    console.error("Error fetching details:", error);
+    return [];
+  }
+};
+
 export const getArtistData = async (artistId) => {
   const token = await getAccessToken();
   if (!token) return null;
-  
   try {
     const [tracksRes, albumsRes] = await Promise.all([
       axios.get(`https://api.spotify.com/v1/artists/${artistId}/top-tracks`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: { market: 'US' } // Đổi sang US
+        params: { market: 'US' } 
       }),
       axios.get(`https://api.spotify.com/v1/artists/${artistId}/albums`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -111,28 +133,20 @@ export const getArtistData = async (artistId) => {
       }))
     };
   } catch (error) {
-    console.error("Artist Data Error:", error);
     return null;
   }
 };
 
-// --- Helper Functions ---
-
 export const searchSpotify = async (query) => await smartSearch(query, 'track');
 export const searchArtists = async (query) => await smartSearch(query, 'artist');
 
+
 export const getNewReleases = async () => {
-  const token = await getAccessToken();
-  if (!token) return [];
-  try {
-    const response = await axios.get('https://api.spotify.com/v1/browse/new-releases', {
-      headers: { Authorization: `Bearer ${token}` },
-      params: { limit: 10, country: 'US' } // Đổi sang US
-    });
-    return response.data.albums.items.map(a => ({
-      id: a.id, title: a.name, subtitle: a.artists[0].name, image: a.images[0]?.url, type: 'album'
-    }));
-  } catch (e) { return []; }
+  return await smartSearch('genre:rock year:2024-2025', 'album');
+};
+
+export const getTopTracks = async () => {
+  return await smartSearch('genre:rock', 'track');
 };
 
 export const getFeaturedPlaylists = async () => {
@@ -141,12 +155,10 @@ export const getFeaturedPlaylists = async () => {
   try {
     const response = await axios.get('https://api.spotify.com/v1/browse/featured-playlists', {
       headers: { Authorization: `Bearer ${token}` },
-      params: { limit: 8, country: 'US', locale: 'en_US' } 
+      params: { limit: 8, country: 'US', locale: 'en_US' }
     });
     return response.data.playlists.items.map(p => ({
       id: p.id, title: p.name, subtitle: p.description, image: p.images[0]?.url, type: 'playlist'
     }));
   } catch (e) { return []; }
 };
-
-export const getTopTracks = async () => await smartSearch('genre:pop year:2024', 'track');

@@ -3,8 +3,6 @@ import { FaMusic, FaCheck, FaPlus } from 'react-icons/fa';
 
 export default function AddToPlaylistModal({ track, onClose, onShowToast, onOpenCreate }) {
   const [playlists, setPlaylists] = useState([]);
-
-  // Hàm load lại playlist (để khi tạo xong nó cập nhật ngay list này)
   const loadPlaylists = () => {
     const saved = JSON.parse(localStorage.getItem('myPlaylists')) || [];
     setPlaylists(saved);
@@ -12,7 +10,6 @@ export default function AddToPlaylistModal({ track, onClose, onShowToast, onOpen
 
   useEffect(() => {
     loadPlaylists();
-    // Lắng nghe sự kiện storage để cập nhật list nếu vừa tạo mới
     window.addEventListener('storage', loadPlaylists);
     return () => window.removeEventListener('storage', loadPlaylists);
   }, []);
@@ -22,7 +19,6 @@ export default function AddToPlaylistModal({ track, onClose, onShowToast, onOpen
     
     const updatedPlaylists = allPlaylists.map(pl => {
       if (pl.id === playlistId) {
-        // Kiểm tra trùng bài hát
         const isExist = pl.songs.some(s => s.id === track.id);
         if (!isExist) {
           return { ...pl, songs: [...pl.songs, track] };
@@ -49,7 +45,6 @@ export default function AddToPlaylistModal({ track, onClose, onShowToast, onOpen
         <h2 className="text-xl font-bold text-white mb-2">Thêm vào Playlist</h2>
         <p className="text-gray-400 text-sm mb-6 truncate">Bài hát: <span className="text-[#1db954]">{track.title}</span></p>
 
-        {/* Nút tạo playlist mới ngay đầu */}
         <button 
           onClick={onOpenCreate}
           className="w-full flex items-center justify-center gap-2 bg-[#333] hover:bg-[#444] text-white py-3 rounded-full mb-4 transition font-bold border border-white/10"

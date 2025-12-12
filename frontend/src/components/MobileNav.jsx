@@ -14,7 +14,7 @@ export default function MobileNav({ view, setView }) {
       </button>
       <button onClick={() => setView('search')} className={`flex flex-col items-center gap-1 transition ${getNavClass('search')}`}>
         <FaSearch className="text-xl" />
-        <span className="text-[10px]">Search</span>
+        <span className="text-[10px]">Discover</span>
       </button>
       <button onClick={() => setView('library')} className={`flex flex-col items-center gap-1 transition ${getNavClass('library')}`}>
         <FaBook className="text-xl" />

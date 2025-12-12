@@ -4,7 +4,6 @@ import { getNewReleases, getTopTracks, searchSpotify } from '../services/spotify
 import SongCard from '../components/SongCard';
 import AlbumCard from '../components/AlbumCard';
 
-// 1. Nhận thêm prop onShowToast ở đây
 export default function HomePage({ onAddRequest, onShowToast }) {
   const [topTracks, setTopTracks] = useState([]);
   const [newReleases, setNewReleases] = useState([]);
@@ -17,22 +16,24 @@ export default function HomePage({ onAddRequest, onShowToast }) {
   const getGreetingWithEmoji = () => {
     const hour = new Date().getHours();
     const greetings = [
-      { time: [0, 5], text: "Dreaming in the Eclips-era 🌙", emoji: "🌙" },
-      { time: [5, 12], text: "Eclipse the morning blues ☀️", emoji: "☀️" },
-      { time: [12, 14], text: "Eclipse your hunger 🍽️", emoji: "🍽️" },
-      { time: [14, 18], text: "Afternoon vibes in our Era 🌤️", emoji: "🌤️" },
-      { time: [18, 22], text: "Have a good Eclip-sera 🌃", emoji: "🌃" },
-      { time: [22, 24], text: "Stars align in the Eclipsera ⭐", emoji: "⭐" }
+      { time: [0, 5], text: "Embrace the Dark Tide 🌙", emoji: "🌙" },
+      { time: [5, 12], text: "Greet the Dawn's Mist ☀️", emoji: "☀️" },
+      { time: [12, 14], text: "Savor the Midday Sun 🍽️", emoji: "🍽️" },
+      { time: [14, 18], text: "Drift on the Horizon Line 🌤️", emoji: "🌤️" },
+      { time: [18, 22], text: "Prepare for Celestial Hours 🌃", emoji: "🌃" },
+      { time: [22, 24], text: "Stars align in the Eclipsea ⭐", emoji: "⭐" }
     ];
-    return greetings.find(g => hour >= g.time[0] && hour < g.time[1])?.text || "Welcome to Eclipsera!";
+ 
+    const greeting = greetings.find(g => hour >= g.time[0] && hour < g.time[1]);
+    return greeting ? greeting.text : "Welcome to Eclipsea!";
   };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [tracks, releases] = await Promise.all([
-          getTopTracks(),
-          getNewReleases()
+          getTopTracks(), 
+          getNewReleases() 
         ]);
         setTopTracks(tracks || []);
         setNewReleases(releases || []);
@@ -62,7 +63,7 @@ export default function HomePage({ onAddRequest, onShowToast }) {
 
   return (
     <div className="animate-fade-in pb-32">
-       
+
        <div className="mb-8 p-6 rounded-xl bg-gradient-to-br from-indigo-900 to-black shadow-xl">
         <h1 className="text-2xl md:text-4xl font-bold mb-4 font-orbitron tracking-wide text-white/90">
             {getGreetingWithEmoji()}
@@ -95,7 +96,6 @@ export default function HomePage({ onAddRequest, onShowToast }) {
           </div>
           {searchResults.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {/* 2. Truyền onShowToast vào SongCard kết quả tìm kiếm */}
               {searchResults.map(item => (
                 <SongCard 
                   key={item.id} 
@@ -111,10 +111,13 @@ export default function HomePage({ onAddRequest, onShowToast }) {
         </div>
       ) : (
         <div className="animate-fade-in">
+          {/* SECTION 1: TOP ROCK TRACKS */}
           <section className="mb-10">
-            <h2 className="text-2xl font-bold mb-4">Trending Songs</h2>
+            <div className="flex items-center gap-3 mb-4">
+               <h2 className="text-2xl font-bold text-white">Rock Legends & Hits</h2>
+               <span className="text-xs font-bold text-black bg-[#1db954] px-2 py-1 rounded uppercase tracking-wider">Featured</span>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {/* 3. Truyền onShowToast vào SongCard thịnh hành */}
               {topTracks.map(item => (
                 <SongCard 
                   key={item.id} 
@@ -126,8 +129,9 @@ export default function HomePage({ onAddRequest, onShowToast }) {
             </div>
           </section>
           
+          {/* SECTION 2: NEW ROCK ALBUMS */}
           <section className="mb-10">
-            <h2 className="text-2xl font-bold mb-4">New Albums</h2>
+            <h2 className="text-2xl font-bold mb-4 text-white">New Rock Arrivals</h2>
             <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
               {newReleases.map(item => <AlbumCard key={item.id} item={item} />)}
             </div>

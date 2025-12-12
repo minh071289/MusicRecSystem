@@ -101,7 +101,7 @@ export default function LibraryPage({ onShowToast, onOpenCreatePlaylist }) {
     window.dispatchEvent(new Event("storage"));
   };
 
-  // --- VIEW DETAILS (CHI TIẾT PLAYLIST) ---
+  // --- VIEW DETAILS ---
   if (viewPlaylist) {
     return (
       <div className="animate-fade-in pb-32 pt-4">
@@ -110,7 +110,6 @@ export default function LibraryPage({ onShowToast, onOpenCreatePlaylist }) {
         </button>
 
         <div className="flex flex-col md:flex-row gap-6 mb-8 items-end">
-          {/* Ảnh Cover Playlist */}
           <div className="relative group w-40 h-40 flex-shrink-0 cursor-pointer shadow-lg" onClick={() => fileInputRef.current.click()} title="Click to change cover">
             <img src={viewPlaylist.image} className="w-full h-full rounded shadow-xl object-cover" alt="Cover" />
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition duration-300 rounded flex flex-col items-center justify-center text-white">
@@ -128,31 +127,56 @@ export default function LibraryPage({ onShowToast, onOpenCreatePlaylist }) {
           </div>
         </div>
 
-        {/* Search Songs */}
-        <div className="mb-6 relative z-20 max-w-sm"> 
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-bold text-white">Add Songs</h2>
+        <div className="mb-8 relative z-20 w-full max-w-3xl"> 
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold text-white">Find songs to add</h2>
           </div>
-          <form onSubmit={handleInlineSearch} className="relative mb-2">
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
-            <input type="text" placeholder="Search for songs..." className="w-full bg-[#2a2a2a] text-white pl-8 pr-8 py-2 rounded-sm border border-transparent focus:border-[#1db954] outline-none transition placeholder-gray-500 text-xs" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2">
-               {isSearching ? <div className="w-3 h-3 border-2 border-[#1db954] border-t-transparent rounded-full animate-spin"></div> : searchQuery && <button type="button" onClick={clearInlineSearch} className="text-gray-400 hover:text-white text-xs"><FaTimes /></button>}
+
+          <form onSubmit={handleInlineSearch} className="relative">
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+            
+            <input 
+              type="text" 
+              placeholder="Search for songs to add..." 
+              className="w-full bg-[#2a2a2a] text-white pl-10 pr-10 py-3 rounded-md border border-transparent focus:border-[#1db954] outline-none transition placeholder-gray-500 shadow-md" 
+              value={searchQuery} 
+              onChange={(e) => setSearchQuery(e.target.value)} 
+            />
+            
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+               {isSearching ? (
+                 <div className="w-4 h-4 border-2 border-[#1db954] border-t-transparent rounded-full animate-spin"></div>
+               ) : searchQuery && (
+                 <button type="button" onClick={clearInlineSearch} className="text-gray-400 hover:text-white">
+                   <FaTimes />
+                 </button>
+               )}
             </div>
           </form>
+
           {searchResults.length > 0 && (
-            <div className="bg-[#181818] rounded p-2 border border-[#333] animate-slide-up max-h-[300px] overflow-y-auto shadow-2xl absolute top-full left-0 right-0">
-              <div className="flex flex-col gap-1">
+            <div className="bg-[#282828] rounded-md mt-2 border border-[#333] animate-slide-up max-h-[400px] overflow-y-auto shadow-2xl absolute top-full left-0 right-0 z-30">
+              <h3 className="text-gray-400 text-xs font-bold uppercase px-4 py-2 bg-[#2a2a2a] sticky top-0">Results</h3>
+              <div className="flex flex-col">
                 {searchResults.map(song => {
                   const isAdded = viewPlaylist.songs.some(s => s.id === song.id);
                   return (
-                    <div key={song.id} className="flex items-center gap-3 p-2 hover:bg-[#333] rounded group transition cursor-default">
-                      <img src={song.image} className="w-8 h-8 rounded object-cover" />
+                    <div key={song.id} className="flex items-center gap-3 p-3 hover:bg-[#3E3E3E] group transition cursor-default border-b border-[#333] last:border-0">
+                      <img src={song.image} className="w-10 h-10 rounded object-cover" />
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-white text-xs truncate">{song.title}</h4>
-                        <p className="text-[10px] text-gray-400 truncate" dangerouslySetInnerHTML={{__html: song.subtitle}}></p>
+                        <h4 className="font-bold text-white text-sm truncate">{song.title}</h4>
+                        <p className="text-xs text-gray-400 truncate" dangerouslySetInnerHTML={{__html: song.subtitle}}></p>
                       </div>
-                      {isAdded ? <span className="text-[10px] text-[#1db954] font-bold px-2">Added</span> : <button onClick={() => addSongToCurrentPlaylist(song)} className="px-3 py-1 rounded border border-gray-600 text-white text-[10px] font-bold hover:border-white transition">Add</button>}
+                      {isAdded ? (
+                        <span className="text-xs text-[#1db954] font-bold px-3 py-1 border border-[#1db954] rounded-full">Added</span>
+                      ) : (
+                        <button 
+                          onClick={() => addSongToCurrentPlaylist(song)} 
+                          className="px-4 py-1.5 rounded-full border border-gray-500 text-white text-xs font-bold hover:border-white hover:bg-white hover:text-black transition"
+                        >
+                          Add
+                        </button>
+                      )}
                     </div>
                   );
                 })}
@@ -195,19 +219,15 @@ export default function LibraryPage({ onShowToast, onOpenCreatePlaylist }) {
     );
   }
 
-  // --- MAIN VIEW (THƯ VIỆN) ---
   return (
     <div className="animate-fade-in pb-32">
-      
-      {/* HERO HEADER: GIỐNG HOMEPAGE (Bo tròn, Gradient) */}
+
       <div className="mb-10 p-6 rounded-xl bg-gradient-to-br from-indigo-900 to-black shadow-xl flex flex-col md:flex-row items-end gap-6">
-        
-        {/* Icon Box */}
+
         <div className="w-32 h-32 flex-shrink-0 bg-white/10 rounded-lg shadow-lg flex items-center justify-center backdrop-blur-sm">
            <FaBook className="text-5xl text-white" />
         </div>
 
-        {/* Text Info */}
         <div className="flex flex-col gap-1 w-full">
            <span className="text-xs font-bold uppercase tracking-widest text-white/70">Personal Space</span>
            
@@ -224,7 +244,6 @@ export default function LibraryPage({ onShowToast, onOpenCreatePlaylist }) {
            </div>
         </div>
       </div>
-      {/* --------------------------------- */}
 
       <section className="mb-10 px-2 md:px-0">
         <div className="flex items-center justify-between mb-4 border-b border-[#282828] pb-2">

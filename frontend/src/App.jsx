@@ -46,7 +46,6 @@ function App() {
       localStorage.setItem('myPlaylists', JSON.stringify([...existing, newPlaylist]));
       
       setIsCreateModalOpen(false);
-      // Nếu đang mở modal thêm bài hát thì không chuyển trang, để người dùng thêm tiếp
       if (!trackToAdd) {
           setView('library');
       }
@@ -83,27 +82,24 @@ function App() {
             {view === 'home' && <HomePage onAddRequest={setTrackToAdd} onShowToast={showToast}/>}
             {view === 'search' && <SearchPage onAddRequest={setTrackToAdd} onShowToast={showToast} />}
             
-            {/* --- SỬA Ở ĐÂY: Truyền hàm mở Modal xuống --- */}
             {view === 'library' && (
               <LibraryPage 
                 onShowToast={showToast} 
                 onOpenCreatePlaylist={() => setIsCreateModalOpen(true)} 
               />
             )}
-            {/* ------------------------------------------- */}
+
           </div>
         </main>
 
         <Player />
         <MobileNav view={view} setView={setView} />
 
-        {/* --- MODALS --- */}
         {trackToAdd && (
           <AddToPlaylistModal 
             track={trackToAdd} 
             onClose={() => setTrackToAdd(null)} 
             onShowToast={showToast}
-            // TRUYỀN HÀM MỞ MODAL TẠO VÀO ĐÂY
             onOpenCreate={() => setIsCreateModalOpen(true)}
           />
         )}

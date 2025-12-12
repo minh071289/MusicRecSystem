@@ -1,89 +1,179 @@
-// --- 1. DATASETS (English Translated) ---
+import Papa from 'papaparse';
+import { dot, norm } from 'mathjs';
 
-export const artists = [
-  { id: 'son_tung', name: 'Sơn Tùng M-TP', genres: 'V-Pop, Pop Ballad', region: 'VN' },
-  { id: 'den_vau', name: 'Đen Vâu', genres: 'Rap, Hip-hop', region: 'VN' },
-  { id: 'hoang_thuy_linh', name: 'Hoàng Thùy Linh', genres: 'Folktronica, Pop', region: 'VN' },
-  { id: 'bts', name: 'BTS', genres: 'K-Pop, Hip-hop', region: 'KR' },
-  { id: 'blackpink', name: 'BLACKPINK', genres: 'K-Pop, EDM', region: 'KR' },
-  { id: 'taylor_swift', name: 'Taylor Swift', genres: 'Pop, Country', region: 'US' },
-  { id: 'the_weeknd', name: 'The Weeknd', genres: 'R&B, Synth-pop', region: 'US' },
-  { id: 'justin_bieber', name: 'Justin Bieber', genres: 'Pop, R&B', region: 'US' },
-  { id: 'ariana_grande', name: 'Ariana Grande', genres: 'Pop, R&B', region: 'US' },
-  { id: 'iu', name: 'IU', genres: 'K-Pop, Ballad', region: 'KR' },
-  { id: 'binz', name: 'Binz', genres: 'Rap, Hip-hop', region: 'VN' },
-  { id: 'min', name: 'Min', genres: 'V-Pop, Dance', region: 'VN' },
-  { id: 'my_tam', name: 'Mỹ Tâm', genres: 'Pop Ballad', region: 'VN' },
-];
+// --- DỮ LIỆU ---
+export let fpGrowthData = {};       // Data Model 1
+export let cfFilteredData = {};     // Data Model 2
+export let userProfiles = [];       // Data Model 3
 
-export const countries = [
-  { id: 'VN', name: 'Vietnam' },
-  { id: 'KR', name: 'South Korea' },
-  { id: 'US', name: 'United States' },
-  { id: 'UK', name: 'United Kingdom' },
-  { id: 'JP', name: 'Japan' },
-  { id: 'CN', name: 'China' },
-];
+export let fpArtistList = [];    
+export let cfArtistList = [];     
+export let userList = [];          
 
-export const miningModels = [
-  { id: 'similar_artist', name: 'Model 1: Artist Similarity' }, // Đã sửa tên hiển thị ở đây luôn cho chắc
-  { id: 'mood_mix', name: 'Model 2: Mood-Based Mix' },
-  { id: 'market_trend', name: 'Model 3: Market Trends' },
-];
+let isDataLoaded = false;
 
-// --- 2. ALGORITHMS (LOGIC) ---
+// --- LOAD DATA ---
+export const loadAllData = async () => {
+  if (isDataLoaded) return;
 
-// (Giữ nguyên logic cũ, chỉ cập nhật comment nếu cần)
-export const runMiningAlgorithm = (modelId, artistId, countryId) => {
-  console.log(`Running Mining: Model=${modelId}, Artist=${artistId}, Country=${countryId}`);
-
-  let result = {
-    type: 'track', 
-    query: '',
-    explanation: ''
+  const loadCSV = (path) => {
+    return new Promise((resolve, reject) => {
+      Papa.parse(path, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => resolve(results.data),
+        error: (err) => reject(err)
+      });
+    });
   };
 
-  // --- MODEL 1: Tìm nghệ sĩ tương đồng (Collaborative Filtering mô phỏng) ---
-  if (modelId === 'similar_artist') {
-    result.type = 'artist';
-    
-    // Tìm nghệ sĩ gốc
-    const seedArtist = artists.find(a => a.id === artistId);
-    
-    if (seedArtist) {
-      // Logic: Tìm nghệ sĩ cùng thể loại (Genres)
-      const relatedGenres = seedArtist.genres.split(',').map(g => g.trim());
-      // Query search giả lập: "K-Pop" hoặc "V-Pop"
-      result.query = `genre:"${relatedGenres[0]}"`; 
+  try {
+    const [fpData, cfData, userData] = await Promise.all([
+      loadCSV('/data/artist_recommendations_fp_growth.csv'),
+      loadCSV('/data/artist_recommendations_cf_filtered.csv'),
+      loadCSV('/data/similar_users_analysis.csv')
+    ]);
+
+    const tempFpArtists = new Set();
+    fpData.forEach(row => {
+
+      const name = row['Artist'] || row['artist'];
+      const recs = row['Recommendations'] || row['recommendations'];
       
-      // Nếu là VN thì ưu tiên tìm thêm nghệ sĩ VN khác
-      if(countryId === 'VN' && seedArtist.region === 'VN') {
-         result.query = 'V-Pop';
+      if (name && recs) {
+        fpGrowthData[name.toLowerCase().trim()] = recs.split('|').map(r => r.trim());
+        tempFpArtists.add(name.trim());
       }
+    });
+    
+
+    fpArtistList = Array.from(tempFpArtists).map(name => ({
+      id: name.toLowerCase(),
+      name: name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    })).sort((a, b) => a.name.localeCompare(b.name));
+
+
+    const tempCfArtists = new Set();
+    cfData.forEach(row => {
+      const name = row['Artist'] || row['artist'];
+      const recs = row['Recommendations'] || row['recommendations'];
+      
+      if (name && recs) {
+        cfFilteredData[name.toLowerCase().trim()] = recs.split('|').map(r => r.trim());
+        tempCfArtists.add(name.trim());
+      }
+    });
+
+    cfArtistList = Array.from(tempCfArtists).map(name => ({
+      id: name.toLowerCase(),
+      name: name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    })).sort((a, b) => a.name.localeCompare(b.name));
+
+
+    userProfiles = userData.map(row => {
+      const userId = row['target_user_id'];
+      const features = Object.keys(row).filter(k => k !== 'target_user_id').map(k => parseFloat(row[k]) || 0);
+
+      let otherSum = 0;
+      const allCountries = [];
+      Object.keys(row).forEach(key => {
+        if (key.startsWith('country_')) {
+          const val = parseFloat(row[key]);
+          const cName = key.replace('country_', '');
+          if (cName === 'Others') otherSum += val;
+          else allCountries.push({ name: cName, value: val * 100 });
+        }
+      });
+
+      allCountries.sort((a, b) => b.value - a.value);
+      const topCountries = allCountries.slice(0, 4);
+      const remaining = allCountries.slice(4).reduce((sum, item) => sum + item.value, 0);
+      
+      const chartCountries = [...topCountries];
+      if (otherSum * 100 + remaining > 0.1) {
+        chartCountries.push({ name: 'Others', value: otherSum * 100 + remaining });
+      }
+
+      const dominantCountry = topCountries.length > 0 ? topCountries[0].name : 'Global';
+
+      return { 
+        id: userId, 
+        vector: features, 
+        dominantCountry,
+        stats: {
+          sex: [
+            { name: 'Male', value: (parseFloat(row['sex_m']) || 0) * 100 },
+            { name: 'Female', value: (parseFloat(row['sex_f']) || 0) * 100 }
+          ],
+          countries: chartCountries
+        }
+      };
+    });
+    
+    userList = userProfiles.map(u => u.id);
+
+    isDataLoaded = true;
+    console.log(`Loaded: FP(${fpArtistList.length}), CF(${cfArtistList.length}), Users(${userList.length})`);
+  } catch (error) {
+    console.error("Data Load Error:", error);
+  }
+};
+
+const calculateCosineSimilarity = (vecA, vecB) => {
+  if (!vecA || !vecB) return 0;
+  return dot(vecA, vecB) / (norm(vecA) * norm(vecB));
+};
+
+export const artistModels = [
+  { id: 'fp_growth', name: 'Association Rules', desc: 'Finds artists frequently listened together (Pattern Matching)' },
+  { id: 'cf_filtered', name: 'Collaborative Filtering', desc: 'Finds artists based on similar user taste profiles' },
+];
+
+export const runMiningAlgorithm = (mode, modelId, inputData) => {
+  let result = { type: 'track', query: '', data: [], explanation: '', stats: null };
+  const safeInput = inputData.toString().toLowerCase().trim();
+
+  if (mode === 'artist') {
+
+    const db = modelId === 'fp_growth' ? fpGrowthData : cfFilteredData;
+    const recs = db[safeInput];
+    
+    result.type = 'artist_list';
+    if (recs) {
+      result.data = recs;
+      result.explanation = `Based on <strong>${modelId === 'fp_growth' ? 'Association Rules' : 'Collaborative Filtering'}</strong>, data suggests listeners of "${inputData}" also enjoy:`;
     } else {
-      // Fallback nếu không tìm thấy ID (người dùng nhập tay)
-      result.query = 'Pop';
+      result.query = `artist:${inputData}`;
+      result.type = 'artist';
+      result.explanation = "Data not found in the selected model. Searching Spotify directly.";
     }
   }
 
-  // --- MODEL 2: Mood Mix (Phân lớp cảm xúc - Classification) ---
-  else if (modelId === 'mood_mix') {
-    result.type = 'playlist';
-    // Logic đơn giản hóa: Dựa vào vùng miền để đoán "Mood"
-    if (countryId === 'VN') result.query = 'Vietnamese Chill';
-    else if (countryId === 'KR') result.query = 'K-Pop Energy';
-    else if (countryId === 'US') result.query = 'US-UK Mood';
-    else result.query = 'Global Chill';
-  }
+  else if (mode === 'user') {
+    const targetUser = userProfiles.find(u => u.id === inputData);
+    
+    if (targetUser) {
+      const similarities = userProfiles
+        .filter(u => u.id !== inputData)
+        .map(u => ({ ...u, score: calculateCosineSimilarity(targetUser.vector, u.vector) }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 1);
 
-  // --- MODEL 3: Market Trend (Phân tích xu hướng - Clustering/Trend Analysis) ---
-  else if (modelId === 'market_trend') {
-    result.type = 'track'; // Trả về bài hát
-    // Logic: Top 50 theo quốc gia
-    if (countryId === 'VN') result.query = 'Top 50 Vietnam';
-    else if (countryId === 'KR') result.query = 'K-Pop Hot';
-    else if (countryId === 'US') result.query = 'Billboard Hot 100';
-    else result.query = 'Global Top 50';
+      const match = similarities[0];
+      
+      result.type = 'playlist';
+      result.query = `Top 50 ${match.dominantCountry}`;
+      result.stats = targetUser.stats; 
+
+      result.explanation = `
+        Based on demographic analysis, your profile matches with the <strong>${match.dominantCountry}</strong> listener group.<br/>
+        Recommended station: <strong>Top 50 ${match.dominantCountry}</strong>.
+      `;
+    } else {
+      result.query = 'Global Top 50';
+      result.explanation = "User ID not found.";
+    }
   }
 
   return result;

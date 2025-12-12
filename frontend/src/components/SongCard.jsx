@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { FaPlay, FaHeart, FaRegHeart, FaPlus } from 'react-icons/fa';
 import { usePlayer } from '../contexts/PlayerContext';
 
-// 1. Nhận thêm prop onShowToast
 export default function SongCard({ item, onAddToPlaylist, onShowToast }) {
   const { playItem } = usePlayer();
   const [isLiked, setIsLiked] = useState(false);
@@ -21,12 +20,12 @@ export default function SongCard({ item, onAddToPlaylist, onShowToast }) {
       const newLiked = likedSongs.filter(s => s.id !== item.id);
       localStorage.setItem('likedSongs', JSON.stringify(newLiked));
       setIsLiked(false);
-      // 2. Thông báo khi bỏ thích
+
       if (onShowToast) onShowToast("Removed from Liked Songs");
     } else {
       localStorage.setItem('likedSongs', JSON.stringify([...likedSongs, item]));
       setIsLiked(true);
-      // 3. Thông báo khi thích
+
       if (onShowToast) onShowToast("Added to Liked Songs");
     }
     window.dispatchEvent(new Event("storage"));

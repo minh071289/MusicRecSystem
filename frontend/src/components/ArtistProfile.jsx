@@ -82,10 +82,8 @@ export default function ArtistProfile({ artist, onBack, onAddRequest }) {
         ) : data ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             
-            {/* LEFT COLUMN (2/3): SONGS & BIO */}
             <div className="lg:col-span-2">
-              
-              {/* Search & Header */}
+
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 border-b border-[#333] pb-4">
                 <h2 className="text-2xl font-bold text-white">Popular</h2>
                 <div className="relative w-full sm:w-64">
@@ -171,7 +169,6 @@ export default function ArtistProfile({ artist, onBack, onAddRequest }) {
               )}
             </div>
 
-            {/* RIGHT COLUMN (1/3): ALBUMS */}
             <div className="lg:col-span-1 relative">
               <div className="sticky top-24 space-y-6">
                 
