@@ -1,0 +1,66 @@
+/* 1. Các dòng @import phải luôn ở dòng đầu tiên */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
+@import "tailwindcss";
+
+/* 2. Tùy chỉnh thanh cuộn */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #121212; 
+}
+
+::-webkit-scrollbar-thumb {
+  background: #535353; 
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1db954; 
+}
+
+/* Màu bôi đen văn bản */
+::selection {
+  background: #1db954;
+  color: black;
+}
+
+/* 3. Các hiệu ứng Animation */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.animate-fade-in { animation: fadeIn 0.5s ease-out; }
+
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.animate-slide-up { animation: slideUp 0.4s ease-out; }
+
+@keyframes pulse-fast { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.animate-pulse-fast { animation: pulse-fast 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+@keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.animate-scale-up { animation: scaleUp 0.2s ease-out; }
+
+/* --- HIỆU ỨNG MỚI CHO ECLIPSERA (XOAY CHẬM) --- */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+/* Font chữ vũ trụ */
+.font-orbitron {
+  font-family: 'Orbitron', sans-serif;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); } /* Bay lên 6px rồi hạ xuống */
+}
+
+/* Khi hover vào group cha, logo con sẽ trôi */
+.group:hover .logo-float {
+  animation: float 3s ease-in-out infinite;
+}
